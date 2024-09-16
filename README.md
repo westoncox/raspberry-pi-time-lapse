@@ -1,5 +1,6 @@
-# raspberry-pi-time-lapse
- Time lapse via HQ camera module, running on raspberry pi 2 model b. Intend to save photos directly to usb flash.
+# raspberry-pi-time-lapse-save-to-usb-flash-drive
+
+ Time lapse via HQ camera module, running on raspberry pi 2 model b. Intend to save photos directly to usb flash drive.
 NOTICE: timelapseV9.py does not work, but timelapseV10.py does. The main difference between the two is that I had the incorrect path for saving images.
 
 For the script to work on other hardware, the user will most likely have to automate USB Mount at Boot (Add it to the /etc/fstab file).
