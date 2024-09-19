@@ -3,104 +3,166 @@ Pi USB Drive Setup
 # This file is a paraphrase of this youtube video tutorial:
 # https://youtu.be/eQZdPlMH-X8?si=Tf1V-RzufNVzVFlX
 
-# IMPORTANT 1: After completing these steps, if you repartition the drive that you've set up to mount with boot,
-# be sure to update the fstab file with the new UUID—otherwise the Pi will not complete boot.
-# IMPORTANT 2: Pi cannot power most spinning hard drives (HDDs) over its USB bus. You need a powered USB hub or "desktop" drive.
-# USB flash drives and SSDs are ok. I don't know if "desktop" drive means 2.5" HDD or not.
+# IMPORTANT 1: After completing these steps to set up a USB drive to mount with boot,
+if you decide to later RE-partition that USB drive, be sure to update the fstab file
+# with the new UUID—-otherwise the Pi will NOT complete boot.
+
+# IMPORTANT 2: Pi cannot power most spinning hard drives (HDDs) via its USB bus.
+# For HDDs, you need a powered USB hub or "desktop" drive.
+# USB flash drives and SSDs are ok. I don't know whether "desktop" drive means 2.5" HDD.
 
 # _________________________________________
 
+# UNMOUNT THE USB DRIVE FIRST!
+# UNMOUNT THE USB DRIVE FIRST!
+# UNMOUNT THE USB DRIVE FIRST!
+# If you don't UNMOUNT THE USB DRIVE FIRST, you WILL have to START OVER.
+# UNMOUNT THE USB DRIVE FIRST!
+# UNMOUNT THE USB DRIVE FIRST!
+# UNMOUNT THE USB DRIVE FIRST!
+
+# STEP 1.) Type the line (below) in Terminal & press ENTER/RETURN.
+# This is how you will approach all the following instructions.
+# You will type every line WITHOUT a "#" at the beginning.
+# None of the rest of the steps are numbered, but you're a smart cookie, you got this!
+
 sudo fdisk -l
 
-# your drive may not be sda, but "dev"=device & "sda"=storage device a.
+# Look for "Disk /dev/sda". Your drive may not be sda (might be sdb).
+# Terminology: "dev"=device & "sda"=storage device a.
+
 sudo fdisk /dev/sda
 
-# "d" deletes partition. Delete all the partitions by pressing "enter".
+# Welcome to fdisk. Be careful. "d" deletes partition.
+# Delete all the partitions by pressing "d" then "enter". (There might be only one partition).
+
 d
 
-# "n" creates a new partition
+# Type "n" to create a new partition.
+
 n
 
-# After pressing "n" & enter, use defaults for: Partition number, First sector, Last sector by pressing "enter" after each question.
+# After pressing "n" & enter, press enter about 2-3 more times to use defaults for:
+# Partition number, First sector, Last sector. (Press "enter" after each question).
 
-# If you encounter RED text "Partition #1 contains a exfat signature.", press "y" to remove it.
+# IF you encounter this RED text: "Partition #1 contains a exfat signature",
+# just press "y" to remove that exfat signature.
 # See your new partition by typing "p".
+
 p
 
 # Commit the changes by pressing "w" for write.
+
 w
 
-# Check to confirm that the changes have been made by typing the following (same as the first line you typed earlier)
+# "The partition table has been altered... Syncing disks."
+# (This may take a while. Wait for "pi@raspberrypi:~ $" to show up).
+# Check to confirm that the changes have been made by typing the following
+# (same as the first line you typed earlier)
+
 sudo fdisk -l
 
 # _________________________________________
 
 # MAKE THE FILESYSTEM (ext4)
-# You should now see "Disk /dev/sda" and "Device /dev/sda1"
+# You should now see "Disk /dev/sda" and a few lines below that, "Device /dev/sda1".
 # The next line will give the drive the filesystem. We will use the Linux filesystem "ext4".
-# mkfs= make filesystem; -t= type; ext4; /dev/sda1= path to the partition we created.
+# Terminology: mkfs= make filesystem; -t= type; ext4; /dev/sda1= path to the partition we created.
+
 sudo mkfs -t ext4 /dev/sda1
 
-# Press "y" if asked whether to proceed.
-
+# Press "y" if asked whether to proceed anyway.
+# If you FORGOT to UNMOUNT the FILESYSTEM, this is the part where you CRY...
+# because you'll (unfortunately) be told the drive is mounted; will not make a filesystem here!
+# So IF you get that ERROR, START OVER--but UNMOUNT the drive FIRST this time!
 # _________________________________________
 
 # Mount the drive: this creates a place to mount the drive
+
 cd /
+
 # If "cd /"" doesn't work, try "cd .." and "cd .." again to get to "pi@raspberrypi:/ $"
 
 ls
-
 sudo mkdir /mnt/hd1
 sudo chown pi:pi /mnt/hd1
 
 # _________________________________________
 
 # The following sets the drive up so that it mounts on boot
+
 sudo blkid
 
-# Find UUID which follows "/dev/sda1" & copy* that UUID string (example: 67F7-A24D)
+# Find UUID which follows "/dev/sda1" & copy* that UUID string (example: 67F7-A24D...etc.)
 # copy the UUID="*"
 
-# Edit the fstab file (which tells the any Linux machine what things to mount when it boots up)
+# Keep the CURRENT Terminal window open, but also open a NEW Terminal window.
+Edit the fstab file (which tells the any Linux machine what things to mount when it boots up)
+
 sudo nano /etc/fstab
 
-# In nano, create a new line & type the following. *paste the UUID you just copied. "defaults" are for Permissions. Extra arguments are nerdy, so use "0 1".
+# In nano, create a new line & type the following. *paste the UUID you just copied.
+"defaults" are for Permissions. Extra arguments are extra nerdy, so just use "0 1".
+
 UUID=* /mnt/hd1 ext4 defaults,nofail 0 1
 
-# Ctrl X to exit, y to save it, Enter to write it.
+# Ctrl X to exit nano, y to save the fstab file, Enter to write the fstab file.
 
 # _________________________________________
 
-# Test what you've done by typing the following two lines.
+# Test what you've done by typing the following two lines:
+
 sudo mount -a
 lsblk
 
-# You should see partition "sda1" at MOUNTPOINT "/mnt/hd1" on drive "sda".
-# If not, make sure to mount the drive with gparted, then run "lsblk" again.
+# You SHOULD see partition "sda1" at MOUNTPOINT "/mnt/hd1" on drive "sda".
+# IF YOU DO NOT see "sda1" at "/mnt/hd1" on "sda', make sure to mount the drive with gparted, then run "lsblk" again.
 # "cd" into "/mnt/hd1", then "ls" to see contents (should be "lost+found").
+
 cd /mnt/hd1
 ls
 
-# Make sure it works by creating a file "touch". Name the file "test".
+# Make sure it works by creating a file in hd1 by typing "touch". Name the file "test".
+
 touch test
 
 #You'll get "permission denied". To get permission, go up a directory "cd .."
+
 cd ..
 ls
-# You will see "hd1". "sudo chmod" to change modification rights. "-R" for recursive
+
+# You should see "hd1".
+# "sudo chmod" to change modification rights. "-R" for recursive
 # 777 for read/write/execute permissions for everybody. "hd1" for location.
+
 sudo chmod -R 777 hd1
 
 # _________________________________________
 
 # Try to write test file again:
+
 cd hd1/
 ls
-# should show "lost+found"
+
+# should show the folder "lost+found".
+
 touch test
 ls
-# should now show "lost+found" and "test"
 
+# should now show "lost+found" and "test".
+
+lsblk
+
+# You SHOULD see partition "sda1" at MOUNTPOINT "/mnt/hd1" on drive "sda".
+# IF YOU DO NOT see "sda1" at "/mnt/hd1" on "sda',
+# make sure to mount the drive with gparted, then run "lsblk" again.
+# For more info, try the following:
+
+df -h
+# and/or
+sudo fdisk -l
+
+# _________________________________________
+# THE END
 
 
